@@ -14,9 +14,38 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
 
+    // MARK: - Core Data stack
+    // the stack is made of;
+    // 1. an NSManagedObjectModel from the model file created
+    // 2. an NSPersistentStoreCoordinator which manages the SQLite database
+    // 3. and NSManagedObjectContext which is what you use to talk to core data
+    // all these are packed into NSPersistentContainer
+    lazy var persistentContainer: NSPersistentContainer = {
+        let container = NSPersistentContainer(name: "DataModel")
+        container.loadPersistentStores {
+            (containerDescription, error) in
+            if let error = error as NSError? {
+                fatalError("error \(error), \(error.userInfo)")
+            }
+        }
+        return container
+    }()
+    lazy var managedObjectContext: NSManagedObjectContext = persistentContainer.viewContext
+
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        let tabController = window?.rootViewController as? UITabBarController
+        let navController = tabController?.viewControllers?.first as? UINavigationController
+        let currentLocationViewController = navController?.viewControllers.first as? CurrentLocationViewController
+        currentLocationViewController?.managedObjectContext = managedObjectContext
+
+        let secondPage = tabController?.viewControllers?[1] as? UINavigationController
+        let locationsViewController = secondPage?.viewControllers.first as? LocationsViewController
+        locationsViewController?.managedObjectContext = managedObjectContext
+        let _ = locationsViewController?.view // to init the table view. else updates to the model when the view is not initialized will not appear in the view when it's finally initialized (when using NSFetchedResultsControllerDelegate)
+
+        listenForDataErrors()
         return true
     }
 
@@ -28,50 +57,39 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         saveContext()
     }
 
-    // MARK: - Core Data stack
+    // MARK:- methods
 
-    lazy var persistentContainer: NSPersistentContainer = {
-        /*
-         The persistent container for the application. This implementation
-         creates and returns a container, having loaded the store for the
-         application to it. This property is optional since there are legitimate
-         error conditions that could cause the creation of the store to fail.
-        */
-        let container = NSPersistentContainer(name: "MyLocations")
-        container.loadPersistentStores(completionHandler: { (storeDescription, error) in
-            if let error = error as NSError? {
-                // Replace this implementation with code to handle the error appropriately.
-                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                 
-                /*
-                 Typical reasons for an error here include:
-                 * The parent directory does not exist, cannot be created, or disallows writing.
-                 * The persistent store is not accessible, due to permissions or data protection when the device is locked.
-                 * The device is out of space.
-                 * The store could not be migrated to the current model version.
-                 Check the error message to determine what the actual problem was.
-                 */
-                fatalError("Unresolved error \(error), \(error.userInfo)")
-            }
+    func listenForDataErrors() {
+        NotificationCenter.default.addObserver(
+            forName: dataSaveFailedNotification,
+            object: nil,
+            queue: OperationQueue.main,
+            using: {
+                notification in
+                let message = """
+Something went wrong while saving your data.
+Contact us to report this issue.
+
+Sorry for this inconvinience.
+"""
+                let alert = UIAlertController(title: "Ooops", message: message, preferredStyle: .alert)
+                let action = UIAlertAction(title: "Ok", style: .default, handler: { _ in
+                    let exception = NSException(name: NSExceptionName.internalInconsistencyException, reason: "Save operation failed", userInfo: nil)
+                    exception.raise()
+
+                })
+                alert.addAction(action)
+
+                self.window?.rootViewController?.present(alert, animated: true, completion: nil)
         })
-        return container
-    }()
+    }
 
-    // MARK: - Core Data Saving support
-
+    // MARK: Core Data Saving support
     func saveContext () {
         let context = persistentContainer.viewContext
         if context.hasChanges {
-            do {
-                try context.save()
-            } catch {
-                // Replace this implementation with code to handle the error appropriately.
-                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                let nserror = error as NSError
-                fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
-            }
+            try? context.save()
         }
     }
-
 }
 

@@ -76,9 +76,9 @@ class HudView: UIView {
 
     private func getFillColor() -> UIColor {
         if #available(iOS 13.0, *) {
-            return UIColor.systemFill
+            return UIColor.groupTableViewBackground.withAlphaComponent(0.9)
         } else {
-            return UIColor(white: 0.3, alpha: 0.8)
+            return UIColor(white: 0.3, alpha: 0.9)
         }
     }
 

@@ -8,6 +8,7 @@
 
 import UIKit
 import CoreLocation
+import CoreData
 
 class LocationDetailsViewController: UITableViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
 
@@ -26,19 +27,30 @@ class LocationDetailsViewController: UITableViewController, UIImagePickerControl
     var image: UIImage?
     var coordinates = CLLocationCoordinate2D(latitude: 0, longitude: 0)
     var placemark: CLPlacemark?
+    var date = Date()
+    var locationToEdit: Location? {
+        // code in this block is executed immidiately you set the value of this var
+        didSet {
+            if let location = locationToEdit {
+                coordinates = CLLocationCoordinate2D(latitude: location.latitude, longitude: location.longitude)
+                placemark = location.placemark
+                date = location.date
+            }
+        }
+    }
+    // MARK: core data
+    var managedObjectContext: NSManagedObjectContext!
 
 
     // MARK:- viewcontroller methods
     override func viewDidLoad() {
         super.viewDidLoad()
-        latitudeLabel.text = String(format: "%.8f",  coordinates.latitude)
-        longitudeLabel.text = String(format: "%.8f",  coordinates.longitude)
-        addressLabel.text = placemark != nil ? String.fromPlacemark(placemark: placemark!) : "N/A"
-        dateLabel.text = String.fromDate(date: Date())
+        initUI()
+    }
 
-        let gestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(hideKeyboard))
-        gestureRecognizer.cancelsTouchesInView = false
-        tableView.addGestureRecognizer(gestureRecognizer)
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        initUpdateImage()
     }
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -117,18 +129,43 @@ class LocationDetailsViewController: UITableViewController, UIImagePickerControl
 
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         dismiss(animated: true, completion: nil)
-        guard let image = info[.originalImage] as? UIImage else { return }
+        guard let image = info[.editedImage] as? UIImage else { return }
         let imagePath = IndexPath(row: 0, section: 0)
         if self.image == nil {
             self.image = image
             addPhotoLabel.text = "Update Photo"
             tableView.insertRows(at: [imagePath], with: .automatic)
         } else {
-            tableView.reloadRows(at: [imagePath], with: .automatic)
+            self.image = image
+            imageView.image = image
         }
     }
 
     // MARK:- methods
+
+    func initUI() {
+        let gestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(hideKeyboard))
+        gestureRecognizer.cancelsTouchesInView = false
+        tableView.addGestureRecognizer(gestureRecognizer)
+        latitudeLabel.text = String(format: "%.8f",  coordinates.latitude)
+        longitudeLabel.text = String(format: "%.8f",  coordinates.longitude)
+        addressLabel.text = placemark != nil ? String.fromPlacemark(placemark: placemark!) : "N/A"
+        dateLabel.text = String.fromDate(date: date)
+        categoryLabel.text = locationToEdit?.category ?? "No Category"
+        descriptionField.text = locationToEdit?.locationDescription ?? ""
+    }
+
+    func initUpdateImage() {
+        guard tableView.numberOfRows(inSection: 0) == 1 else { return }
+        if let location = locationToEdit,
+            let imagePath = location.imageURL,
+            let data = try? Data(contentsOf: appDocumentDirectory.appendingPathComponent(imagePath)),
+            let image = UIImage(data: data) {
+            self.image = image
+            tableView.insertRows(at: [IndexPath(row: 0, section: 0)], with: .automatic)
+            addPhotoLabel.text = "Update Photo"
+        }
+    }
 
     func prepNshowImagePicker() {
 
@@ -141,14 +178,17 @@ class LocationDetailsViewController: UITableViewController, UIImagePickerControl
             _ in
             self.showImagePicker(sourceType: .photoLibrary)
         }
+        let cancelAction = UIAlertAction(title: "Cancel", style: .destructive)
         alert.addAction(cameraAction)
         alert.addAction(photosAction)
+        alert.addAction(cancelAction)
         present(alert, animated: true, completion: nil)
     }
 
     func showImagePicker(sourceType: UIImagePickerController.SourceType) {
         let imagePicker = UIImagePickerController()
         imagePicker.sourceType = sourceType
+        imagePicker.allowsEditing = true
         imagePicker.delegate = self
         present(imagePicker, animated: true, completion: nil)
     }
@@ -160,16 +200,43 @@ class LocationDetailsViewController: UITableViewController, UIImagePickerControl
         descriptionField.resignFirstResponder()
     }
 
+    func saveImage(_ image: UIImage, for location: Location) {
+        do {
+            try image.jpegData(compressionQuality: 0.7)?.write(to: appDocumentDirectory.appendingPathComponent("\(self.date.timeIntervalSince1970).JPEG"), options: .atomic)
+            location.imageURL = "\(self.date.timeIntervalSince1970).JPEG"
+            try self.managedObjectContext.save()
+        } catch {
+            fatalDataError(error)
+        }
+    }
+
     // MARK:- ibactions
     @IBAction func done(_ sender: UIBarButtonItem) {
+        let location = locationToEdit != nil ? locationToEdit! : Location(context: managedObjectContext)
+        location.category = categoryLabel.text!
+        location.locationDescription = descriptionField.text!
+        location.date = date
+        location.placemark = placemark
+        location.longitude = coordinates.longitude
+        location.latitude = coordinates.latitude
+        if let image = image {
+            DispatchQueue.global(qos: .background).async { self.saveImage(image, for: location) }
+        } else {
+            do {
+                try managedObjectContext.save()
+            } catch {
+                fatalDataError(error)
+            }
+        }
+
         let hud = HudView.hud(inView: navigationController!.view, animated: true)
-        hud.text = "Tagged"
+        hud.text = locationToEdit != nil ? "Updated" : "Tagged"
         navigationController?.popViewController(animated: true)
         afterDelay(0.7) {
             hud.hide()
         }
     }
-
+    
     // this is a target action for a rewind segue. Rewind segue "rewinds" a segue so a segue to categoryViewController will rewind back to this controller
     // rewind segue is a simpler alternative for picker screens compared to delegates
     @IBAction func pickedCategory(_ segue: UIStoryboardSegue) {

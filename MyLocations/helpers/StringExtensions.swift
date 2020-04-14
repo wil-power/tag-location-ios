@@ -18,7 +18,7 @@ private let dateFormatter: DateFormatter = {
 }()
 
 extension String {
-    static func fromPlacemark(placemark: CLPlacemark) -> String {
+    static func fromPlacemark(placemark: CLPlacemark, multiline: Bool = true) -> String {
 
         var line1 = ""
 
@@ -28,6 +28,13 @@ extension String {
 
         if let s = placemark.thoroughfare {
             line1 += s }
+
+        guard multiline else {
+            if let s = placemark.locality {
+                line1 += " " + s
+            }
+            return line1
+        }
 
         var line2 = ""
         if let s = placemark.locality {
