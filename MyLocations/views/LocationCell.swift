@@ -26,6 +26,10 @@ class LocationCell: UITableViewCell {
         detailTextLabel?.text = location.placemark == nil
             ? String(format: "Lat: %.8f, Long: %.8f", location.latitude, location.longitude)
             : String.fromPlacemark(placemark: location.placemark!, multiline: false)
+
+        if let image = location.image {
+            imageView?.image = image.resized(withBounds: CGSize(width: 60, height: 60))
+        }
     }
 
 }

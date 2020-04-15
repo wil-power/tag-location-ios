@@ -10,7 +10,7 @@ import UIKit
 import CoreLocation
 import CoreData
 
-class LocationDetailsViewController: UITableViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+class LocationDetailsViewController: UITableViewController {
 
     // MARK:- iboutlets
     @IBOutlet weak var descriptionField: UITextView!
@@ -41,11 +41,11 @@ class LocationDetailsViewController: UITableViewController, UIImagePickerControl
     // MARK: core data
     var managedObjectContext: NSManagedObjectContext!
 
-
     // MARK:- viewcontroller methods
     override func viewDidLoad() {
         super.viewDidLoad()
         initUI()
+        listenForDidEnterBackground()
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -121,29 +121,22 @@ class LocationDetailsViewController: UITableViewController, UIImagePickerControl
         return image != nil && indexPath.section == 0 && indexPath.row == 0
     }
 
-    // MARK:- photo picker methods
+    // MARK:- methods
 
-    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-        dismiss(animated: true, completion: nil)
-    }
-
-    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-        dismiss(animated: true, completion: nil)
-        guard let image = info[.editedImage] as? UIImage else { return }
-        let imagePath = IndexPath(row: 0, section: 0)
-        if self.image == nil {
-            self.image = image
-            addPhotoLabel.text = "Update Photo"
-            tableView.insertRows(at: [imagePath], with: .automatic)
-        } else {
-            self.image = image
-            imageView.image = image
+    func listenForDidEnterBackground() {
+        NotificationCenter.default.addObserver(
+        forName: UIApplication.didEnterBackgroundNotification, object: nil, queue: OperationQueue.main) { [weak self] _ in
+            self?.descriptionField.resignFirstResponder()
+            if self?.presentedViewController != nil {
+                self?.dismiss(animated: false, completion: nil)
+            }
         }
     }
 
-    // MARK:- methods
-
     func initUI() {
+        if let _ = locationToEdit {
+            navigationItem.title = "Update Tag"
+        }
         let gestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(hideKeyboard))
         gestureRecognizer.cancelsTouchesInView = false
         tableView.addGestureRecognizer(gestureRecognizer)
@@ -155,59 +148,11 @@ class LocationDetailsViewController: UITableViewController, UIImagePickerControl
         descriptionField.text = locationToEdit?.locationDescription ?? ""
     }
 
-    func initUpdateImage() {
-        guard tableView.numberOfRows(inSection: 0) == 1 else { return }
-        if let location = locationToEdit,
-            let imagePath = location.imageURL,
-            let data = try? Data(contentsOf: appDocumentDirectory.appendingPathComponent(imagePath)),
-            let image = UIImage(data: data) {
-            self.image = image
-            tableView.insertRows(at: [IndexPath(row: 0, section: 0)], with: .automatic)
-            addPhotoLabel.text = "Update Photo"
-        }
-    }
-
-    func prepNshowImagePicker() {
-
-        let alert = UIAlertController(title: "Photo Source", message: "Select where you want to pick a picture", preferredStyle: .actionSheet)
-        let cameraAction = UIAlertAction(title: "Camera", style: .default) {
-            _ in
-            self.showImagePicker(sourceType: .camera)
-        }
-        let photosAction = UIAlertAction(title: "Photo Library", style: .default) {
-            _ in
-            self.showImagePicker(sourceType: .photoLibrary)
-        }
-        let cancelAction = UIAlertAction(title: "Cancel", style: .destructive)
-        alert.addAction(cameraAction)
-        alert.addAction(photosAction)
-        alert.addAction(cancelAction)
-        present(alert, animated: true, completion: nil)
-    }
-
-    func showImagePicker(sourceType: UIImagePickerController.SourceType) {
-        let imagePicker = UIImagePickerController()
-        imagePicker.sourceType = sourceType
-        imagePicker.allowsEditing = true
-        imagePicker.delegate = self
-        present(imagePicker, animated: true, completion: nil)
-    }
-
     @objc func hideKeyboard(_ sender: UIGestureRecognizer) {
         let point = sender.location(in: tableView)
         let indexPath = tableView.indexPathForRow(at: point)
         guard let path = indexPath, !(path.section == 1 && path.row == 0) else { return }
         descriptionField.resignFirstResponder()
-    }
-
-    func saveImage(_ image: UIImage, for location: Location) {
-        do {
-            try image.jpegData(compressionQuality: 0.7)?.write(to: appDocumentDirectory.appendingPathComponent("\(self.date.timeIntervalSince1970).JPEG"), options: .atomic)
-            location.imageURL = "\(self.date.timeIntervalSince1970).JPEG"
-            try self.managedObjectContext.save()
-        } catch {
-            fatalDataError(error)
-        }
     }
 
     // MARK:- ibactions
@@ -220,15 +165,14 @@ class LocationDetailsViewController: UITableViewController, UIImagePickerControl
         location.longitude = coordinates.longitude
         location.latitude = coordinates.latitude
         if let image = image {
-            DispatchQueue.global(qos: .background).async { self.saveImage(image, for: location) }
-        } else {
-            do {
-                try managedObjectContext.save()
-            } catch {
-                fatalDataError(error)
-            }
+            location.imageURL = "\(location.date.timeIntervalSince1970).JPEG"
+            saveImage(image, for: location)
         }
-
+        do {
+            try managedObjectContext.save()
+        } catch {
+            fatalDataError(error)
+        }
         let hud = HudView.hud(inView: navigationController!.view, animated: true)
         hud.text = locationToEdit != nil ? "Updated" : "Tagged"
         navigationController?.popViewController(animated: true)
@@ -243,4 +187,75 @@ class LocationDetailsViewController: UITableViewController, UIImagePickerControl
         let controller = segue.source as! CategoryViewController
         categoryLabel.text = controller.selectedCategory
     }
+}
+
+// MARK:- image fuctionalities
+extension LocationDetailsViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+
+    // MARK: photo picker methods
+
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        dismiss(animated: true, completion: nil)
+    }
+
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        dismiss(animated: true, completion: nil)
+        guard let editedImage = info[.editedImage] as? UIImage else { return }
+        let imagePath = IndexPath(row: 0, section: 0)
+        if image == nil {
+            image = editedImage
+            addPhotoLabel.text = "Update Photo"
+            tableView.insertRows(at: [imagePath], with: .automatic)
+        } else {
+            image = editedImage
+            imageView.image = editedImage
+        }
+    }
+
+    func initUpdateImage() {
+        guard tableView.numberOfRows(inSection: 0) == 1 else { return }
+        if let location = locationToEdit,
+            let img = location.image {
+            image = img
+            tableView.insertRows(at: [IndexPath(row: 0, section: 0)], with: .automatic)
+            addPhotoLabel.text = "Update Photo"
+        }
+    }
+
+    func prepNshowImagePicker() {
+
+        let alert = UIAlertController(title: "Photo Source", message: "Select where you want to pick a picture", preferredStyle: .actionSheet)
+        let photosAction = UIAlertAction(title: "Photo Library", style: .default) {
+            _ in
+            self.showImagePicker(sourceType: .photoLibrary)
+        }
+        let cancelAction = UIAlertAction(title: "Cancel", style: .destructive)
+        if UIImagePickerController.isSourceTypeAvailable(.camera) {
+            let cameraAction = UIAlertAction(title: "Camera", style: .default) {
+                _ in
+                self.showImagePicker(sourceType: .camera)
+            }
+            alert.addAction(cameraAction)
+        }
+        alert.addAction(photosAction)
+        alert.addAction(cancelAction)
+        present(alert, animated: true, completion: nil)
+    }
+
+    func showImagePicker(sourceType: UIImagePickerController.SourceType) {
+        let imagePicker = UIImagePickerController()
+        imagePicker.sourceType = sourceType
+        imagePicker.allowsEditing = true
+        imagePicker.delegate = self
+        present(imagePicker, animated: true, completion: nil)
+    }
+
+    func saveImage(_ image: UIImage, for location: Location) {
+        do {
+            try image.jpegData(compressionQuality: 0.5)?.write(to: appDocumentDirectory.appendingPathComponent(location.imageURL!), options: .atomic)
+        } catch {
+            fatalDataError(error)
+        }
+    }
+
 }

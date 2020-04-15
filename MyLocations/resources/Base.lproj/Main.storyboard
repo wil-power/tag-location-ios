@@ -180,7 +180,7 @@
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" mapType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="ODS-yq-D8N">
+                            <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" mapType="standard" showsUserLocation="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ODS-yq-D8N">
                                 <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                             </mapView>
                         </subviews>
@@ -194,11 +194,20 @@
                         <viewLayoutGuide key="safeArea" id="3Uf-1P-9Xp"/>
                     </view>
                     <navigationItem key="navigationItem" title="Map" id="aHD-SV-nfW">
-                        <barButtonItem key="leftBarButtonItem" title="Locations" id="JZp-Ib-KWr"/>
-                        <barButtonItem key="rightBarButtonItem" title="User" id="JSJ-8N-uGw"/>
+                        <barButtonItem key="leftBarButtonItem" title="Locations" id="JZp-Ib-KWr">
+                            <connections>
+                                <action selector="showLocations:" destination="bqL-c8-JYd" id="CCP-IH-84T"/>
+                            </connections>
+                        </barButtonItem>
+                        <barButtonItem key="rightBarButtonItem" title="User" id="JSJ-8N-uGw">
+                            <connections>
+                                <action selector="showUserLocation:" destination="bqL-c8-JYd" id="YsA-Cm-FWB"/>
+                            </connections>
+                        </barButtonItem>
                     </navigationItem>
                     <connections>
                         <outlet property="mapView" destination="ODS-yq-D8N" id="QwC-uV-nna"/>
+                        <segue destination="tUz-bT-tl6" kind="show" identifier="showLocationSegue" id="o7c-zV-ktB"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="SdA-7q-VUf" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -574,7 +583,7 @@
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="Id1-Ww-TVC"/>
+        <segue reference="o7c-zV-ktB"/>
     </inferredMetricsTieBreakers>
     <color key="tintColor" systemColor="systemPurpleColor" red="0.68627450980000004" green="0.32156862749999998" blue="0.87058823529999996" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
     <resources>

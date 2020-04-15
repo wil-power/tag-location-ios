@@ -83,9 +83,7 @@ class LocationsViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
             let location = fetchedResultController.object(at: indexPath)
-            if let imageURL = location.imageURL {
-                 try? FileManager.default.removeItem(at: appDocumentDirectory.appendingPathComponent(imageURL))
-            }
+            location.deleteImage()
             managedObjectContext.delete(location)
             try? managedObjectContext.save()
         }

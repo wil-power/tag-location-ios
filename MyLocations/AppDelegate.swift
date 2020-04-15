@@ -32,7 +32,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }()
     lazy var managedObjectContext: NSManagedObjectContext = persistentContainer.viewContext
 
-
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         let tabController = window?.rootViewController as? UITabBarController
@@ -44,6 +43,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let locationsViewController = secondPage?.viewControllers.first as? LocationsViewController
         locationsViewController?.managedObjectContext = managedObjectContext
         let _ = locationsViewController?.view // to init the table view. else updates to the model when the view is not initialized will not appear in the view when it's finally initialized (when using NSFetchedResultsControllerDelegate)
+
+        let thirdPage = tabController?.viewControllers?[2] as? UINavigationController
+        let mapViewController = thirdPage?.viewControllers.first as? MapViewController
+        mapViewController?.managedObjectContext = managedObjectContext
+//        let _ = mapViewController?.view
 
         listenForDataErrors()
         return true
@@ -60,11 +64,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // MARK:- methods
 
     func listenForDataErrors() {
-        NotificationCenter.default.addObserver(
+       NotificationCenter.default.addObserver(
             forName: dataSaveFailedNotification,
             object: nil,
             queue: OperationQueue.main,
-            using: {
+            using: { [weak self]
                 notification in
                 let message = """
 Something went wrong while saving your data.
@@ -80,7 +84,7 @@ Sorry for this inconvinience.
                 })
                 alert.addAction(action)
 
-                self.window?.rootViewController?.present(alert, animated: true, completion: nil)
+                self?.window?.rootViewController?.present(alert, animated: true, completion: nil)
         })
     }
 
