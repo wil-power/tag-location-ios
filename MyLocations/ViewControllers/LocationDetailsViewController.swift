@@ -247,6 +247,7 @@ extension LocationDetailsViewController: UIImagePickerControllerDelegate, UINavi
         imagePicker.sourceType = sourceType
         imagePicker.allowsEditing = true
         imagePicker.delegate = self
+        imagePicker.view.tintColor = .systemPurple
         present(imagePicker, animated: true, completion: nil)
     }
 
@@ -257,5 +258,4 @@ extension LocationDetailsViewController: UIImagePickerControllerDelegate, UINavi
             fatalDataError(error)
         }
     }
-
 }

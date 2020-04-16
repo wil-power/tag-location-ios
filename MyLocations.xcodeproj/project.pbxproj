@@ -19,12 +19,12 @@
 		433D6FD624468351007182F9 /* MapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 433D6FD524468350007182F9 /* MapKit.framework */; };
 		433D6FD824468435007182F9 /* MapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 433D6FD724468435007182F9 /* MapViewController.swift */; };
 		43A6D2AF2447A6D5005630DB /* UIImageExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43A6D2AE2447A6D5005630DB /* UIImageExtensions.swift */; };
+		43A6D2B22447E7A6005630DB /* Sound.caf in Resources */ = {isa = PBXBuildFile; fileRef = 43A6D2B12447E7A6005630DB /* Sound.caf */; };
 		43B72AC324445B81001D1E12 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43B72AC224445B81001D1E12 /* AppDelegate.swift */; };
 		43B72AC724445B81001D1E12 /* CurrentLocationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43B72AC624445B81001D1E12 /* CurrentLocationViewController.swift */; };
 		43B72ACC24445B81001D1E12 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 43B72ACA24445B81001D1E12 /* Main.storyboard */; };
 		43B72ACF24445B81001D1E12 /* DataModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 43B72ACD24445B81001D1E12 /* DataModel.xcdatamodeld */; };
 		43B72AD124445B83001D1E12 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 43B72AD024445B83001D1E12 /* Assets.xcassets */; };
-		43B72AD424445B83001D1E12 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 43B72AD224445B83001D1E12 /* LaunchScreen.storyboard */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -40,13 +40,13 @@
 		433D6FD524468350007182F9 /* MapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapKit.framework; path = System/Library/Frameworks/MapKit.framework; sourceTree = SDKROOT; };
 		433D6FD724468435007182F9 /* MapViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapViewController.swift; sourceTree = "<group>"; };
 		43A6D2AE2447A6D5005630DB /* UIImageExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIImageExtensions.swift; sourceTree = "<group>"; };
+		43A6D2B12447E7A6005630DB /* Sound.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Sound.caf; sourceTree = "<group>"; };
 		43B72ABF24445B81001D1E12 /* MyLocations.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MyLocations.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		43B72AC224445B81001D1E12 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		43B72AC624445B81001D1E12 /* CurrentLocationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentLocationViewController.swift; sourceTree = "<group>"; };
 		43B72ACB24445B81001D1E12 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		43B72ACE24445B81001D1E12 /* MyLocations.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MyLocations.xcdatamodel; sourceTree = "<group>"; };
 		43B72AD024445B83001D1E12 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		43B72AD324445B83001D1E12 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		43B72AD524445B83001D1E12 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -79,7 +79,6 @@
 			children = (
 				43B72ACA24445B81001D1E12 /* Main.storyboard */,
 				43B72AD024445B83001D1E12 /* Assets.xcassets */,
-				43B72AD224445B83001D1E12 /* LaunchScreen.storyboard */,
 			);
 			path = resources;
 			sourceTree = "<group>";
@@ -121,6 +120,14 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		43A6D2B02447E7A6005630DB /* Sound */ = {
+			isa = PBXGroup;
+			children = (
+				43A6D2B12447E7A6005630DB /* Sound.caf */,
+			);
+			path = Sound;
+			sourceTree = "<group>";
+		};
 		43B72AB624445B80001D1E12 = {
 			isa = PBXGroup;
 			children = (
@@ -141,6 +148,7 @@
 		43B72AC124445B81001D1E12 /* MyLocations */ = {
 			isa = PBXGroup;
 			children = (
+				43A6D2B02447E7A6005630DB /* Sound */,
 				433D6FCB24461D7D007182F9 /* model */,
 				433D6FC62445F32D007182F9 /* views */,
 				433C9F2124452CB700BE7732 /* helpers */,
@@ -210,8 +218,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				43B72AD424445B83001D1E12 /* LaunchScreen.storyboard in Resources */,
 				43B72AD124445B83001D1E12 /* Assets.xcassets in Resources */,
+				43A6D2B22447E7A6005630DB /* Sound.caf in Resources */,
 				43B72ACC24445B81001D1E12 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -249,14 +257,6 @@
 				43B72ACB24445B81001D1E12 /* Base */,
 			);
 			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
-		43B72AD224445B83001D1E12 /* LaunchScreen.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				43B72AD324445B83001D1E12 /* Base */,
-			);
-			name = LaunchScreen.storyboard;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */

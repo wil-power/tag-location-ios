@@ -18,37 +18,38 @@ private let dateFormatter: DateFormatter = {
 }()
 
 extension String {
+
+    /// generate a string from a placemark
+    /// - Parameters:
+    ///   - placemark: the target placemark
+    ///   - multiline: whether the string should be 2 line, including administrative area and postal code
+    /// - Returns: the generated string
     static func fromPlacemark(placemark: CLPlacemark, multiline: Bool = true) -> String {
 
         var line1 = ""
-
-        if let s = placemark.subThoroughfare {
-            line1 += s + " "
-        }
-
-        if let s = placemark.thoroughfare {
-            line1 += s }
-
+        line1.add(text: placemark.subThoroughfare)
+        line1.add(text: placemark.thoroughfare, separatedBy: " ")
         guard multiline else {
-            if let s = placemark.locality {
-                line1 += " " + s
-            }
+            line1.add(text: placemark.locality, separatedBy: " ")
             return line1
         }
 
-        var line2 = ""
-        if let s = placemark.locality {
-            line2 += s + " "
-        }
-        if let s = placemark.administrativeArea {
-            line2 += s + " "
-        }
-        if let s = placemark.postalCode {
-            line2 += s }
 
-        return line1 + "\n" + line2
+        var line2 = ""
+        line2.add(text: placemark.locality)
+        line2.add(text: placemark.administrativeArea, separatedBy: " ")
+        line2.add(text: placemark.postalCode, separatedBy: " ")
+
+        line1.add(text: line2, separatedBy: "\n")
+        return line1
     }
 
+    /// generate a string from a date
+    /// - Parameters:
+    ///   - date: date to generate string from
+    ///   - dateStyle: style of the date
+    ///   - timeStyle: style of the time
+    /// - Returns: a string generated from the date in the specified style
     static func fromDate(date: Date, dateStyle: DateFormatter.Style = .medium, timeStyle: DateFormatter.Style = .short) -> String {
 
         if dateFormatter.dateStyle != dateStyle {
@@ -59,5 +60,15 @@ extension String {
         }
 
         return dateFormatter.string(from: date)
+    }
+
+    /// add some text to a string
+    /// - Parameters:
+    ///   - text: text to add
+    ///   - separatedBy: character that separates this string and the added
+    mutating func add(text: String?, separatedBy: String = "") {
+        guard let text = text else { return }
+        if !separatedBy.isEmpty { self += separatedBy }
+        self += text
     }
 }

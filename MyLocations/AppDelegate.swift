@@ -34,6 +34,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+
         let tabController = window?.rootViewController as? UITabBarController
         let navController = tabController?.viewControllers?.first as? UINavigationController
         let currentLocationViewController = navController?.viewControllers.first as? CurrentLocationViewController

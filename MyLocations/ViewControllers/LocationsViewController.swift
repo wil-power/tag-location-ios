@@ -89,6 +89,10 @@ class LocationsViewController: UITableViewController {
         }
     }
 
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        70
+    }
+
     // MARK:- methods
     func loadData() {
         try? fetchedResultController.performFetch()

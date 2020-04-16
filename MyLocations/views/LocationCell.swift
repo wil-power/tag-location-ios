@@ -10,6 +10,12 @@ import UIKit
 
 class LocationCell: UITableViewCell {
 
+    // MARK:- outlets
+
+    @IBOutlet weak var locationImageView: UIImageView!
+    @IBOutlet weak var descriptionLabel: UILabel!
+    @IBOutlet weak var addressLabel: UILabel!
+
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code
@@ -22,14 +28,20 @@ class LocationCell: UITableViewCell {
     }
 
     func configure(for location: Location) {
-        textLabel?.text = location.locationDescription.isEmpty ? "No Description" : location.locationDescription
-        detailTextLabel?.text = location.placemark == nil
+        descriptionLabel.text = location.title
+        addressLabel.text = location.placemark == nil
             ? String(format: "Lat: %.8f, Long: %.8f", location.latitude, location.longitude)
             : String.fromPlacemark(placemark: location.placemark!, multiline: false)
 
-        if let image = location.image {
-            imageView?.image = image.resized(withBounds: CGSize(width: 60, height: 60))
+        guard let image = location.image else {
+            locationImageView.image = UIImage(named: "No Photo")
+            return
         }
+//        imageView.frame = CGRect(origin: CGPoint.zero, size: CGSize(width: 10, height: 10))
+//        imageView.bounds = CGRect(origin: CGPoint.zero, size: CGSize(width: 10, height: 10))
+        locationImageView.image = image.resized(withBounds: CGSize(width: 52, height: 52))
+        locationImageView.layer.cornerRadius = locationImageView.bounds.size.width / 2
+        locationImageView.clipsToBounds = true
     }
 
 }
